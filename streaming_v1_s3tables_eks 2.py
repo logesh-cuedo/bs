@@ -10,7 +10,6 @@ Single-stream consolidated version:
   - Bronze schema preserved exactly (only `ts` → IST; other timestamp fields stay
     as raw longs) for apples-to-apples validation against Databricks Delta Lake.
 """
-
 import json
 import logging
 
