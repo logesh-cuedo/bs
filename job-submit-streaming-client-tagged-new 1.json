@@ -1,0 +1,44 @@
+{
+  "name": "spark-streaming-bronze-silver-eks",
+  "virtualClusterId": "brtw9ztup2y01wok6x8r2bsmr",
+  "executionRoleArn": "arn:aws:iam::910556394401:role/bs-analytics-emr-on-eks-irsa",
+  "releaseLabel": "emr-7.9.0-latest",
+  "tags": {
+    "Vendor": "Devotica",
+    "cost-center": "emr-eks-prod",
+    "workload": "iot-streaming-bronze-silver"
+  },
+  "jobDriver": {
+    "sparkSubmitJobDriver": {
+      "entryPoint": "s3://emr-migration-poc/scripts/streaming_v1_s3tables_eks.py",
+      "sparkSubmitParameters": "--jars s3://emr-migration-poc/jars/s3-tables-catalog-for-iceberg-runtime-0.1.8.jar --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.6,org.apache.spark:spark-avro_2.12:3.5.6 --conf spark.executor.instances=4 --conf spark.executor.memory=10G --conf spark.executor.memoryOverhead=3G --conf spark.executor.cores=4 --conf spark.driver.memory=4G --conf spark.driver.memoryOverhead=1G --conf spark.driver.cores=2 --conf spark.kubernetes.driver.serviceAccountName=emr-sa --conf spark.kubernetes.executor.serviceAccountName=emr-sa --conf spark.kubernetes.driver.limit.cores=2 --conf spark.kubernetes.driver.limit.memory=6G --conf spark.kubernetes.executor.limit.cores=4 --conf spark.kubernetes.executor.limit.memory=15G --conf spark.kubernetes.container.image.pullPolicy=IfNotPresent --conf spark.kubernetes.driver.label.cost-center=emr-eks-prod --conf spark.kubernetes.executor.label.cost-center=emr-eks-prod --conf spark.sql.streaming.stateStore.providerClass=org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider --conf spark.sql.streaming.minBatchesToRetain=10 --conf spark.sql.shuffle.partitions=32 --conf spark.sql.adaptive.enabled=true --conf spark.sql.adaptive.coalescePartitions.enabled=true --conf spark.log.level=WARN"
+    }
+  },
+  "configurationOverrides": {
+    "applicationConfiguration": [
+      {
+        "classification": "spark-defaults",
+        "properties": {
+          "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+          "spark.sql.catalog.s3tablescatalog/bs-iot-tables-poc": "org.apache.iceberg.spark.SparkCatalog",
+          "spark.sql.catalog.s3tablescatalog/bs-iot-tables-poc.catalog-impl": "software.amazon.s3tables.iceberg.S3TablesCatalog",
+          "spark.sql.catalog.s3tablescatalog/bs-iot-tables-poc.warehouse": "arn:aws:s3tables:ap-south-1:910556394401:bucket/bs-iot-tables-poc",
+          "spark.sql.defaultCatalog": "s3tablescatalog/bs-iot-tables-poc",
+          "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider",
+          "spark.kubernetes.executor.deleteOnTermination": "true",
+          "spark.driver.extraJavaOptions": "-Dsoftware.amazon.s3tables.shaded.awssdk.http.service.impl=software.amazon.s3tables.shaded.awssdk.http.urlconnection.UrlConnectionSdkHttpService",
+          "spark.executor.extraJavaOptions": "-Dsoftware.amazon.s3tables.shaded.awssdk.http.service.impl=software.amazon.s3tables.shaded.awssdk.http.urlconnection.UrlConnectionSdkHttpService"
+        }
+      }
+    ],
+    "monitoringConfiguration": {
+      "cloudWatchMonitoringConfiguration": {
+        "logGroupName": "/emr-on-eks/bs-analytics",
+        "logStreamNamePrefix": "streaming-bronze-silver"
+      },
+      "s3MonitoringConfiguration": {
+        "logUri": "s3://emr-migration-poc/emr-eks-logs/"
+      }
+    }
+  }
+}
