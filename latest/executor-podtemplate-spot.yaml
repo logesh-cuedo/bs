@@ -20,7 +20,7 @@ spec:
                 values: ["spot"]      # CHANGED from on-demand
               - key: kubernetes.io/arch
                 operator: In
-                values: ["arm64"]     # support of arm64 confirmed
+                values: ["amd64"]     # support of arm64 confirmed
               # r-series only on Graviton — m6g/m7g .xlarge are 16 GiB total,
               # which after EKS kubelet reservations (~2 GiB) + daemonsets
               # (~1 GiB) leaves ~13 GiB allocatable. Our executor pod request
@@ -38,14 +38,14 @@ spec:
       # Soft preference: newer generations when prices are similar.
       # Karpenter still picks cheapest available Spot, this just tilts
       # toward gen-7 Graviton (m7g, r7g) when comparable to gen-6 (m6g, r6g).
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 30
-          preference:
-            matchExpressions:
-              - key: karpenter.k8s.aws/instance-generation
-                operator: In
-                values:
-                  - "7"
+#      preferredDuringSchedulingIgnoredDuringExecution:
+#        - weight: 30
+#          preference:
+#            matchExpressions:
+#              - key: karpenter.k8s.aws/instance-generation
+#                operator: In
+#                values:
+#                  - "7"
 
   # SPOT RECLAIM SURVIVAL TUNING
   # When AWS sends a 2-minute Spot interruption notice, K8s sends SIGTERM

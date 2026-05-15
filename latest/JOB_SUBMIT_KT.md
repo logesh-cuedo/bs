@@ -93,5 +93,16 @@ Common exit codes:
 - `143` / `Error` — container received SIGTERM (K8s killed the pod — node drain, spot interruption, autoscaler, etc.)
 - `11` / `Error` — Spark driver application exit (Python main raised an exception; check driver stderr/stdout for the traceback)
 
+To verify what Karpenter actually picked for the executors:
+```
+aws logs filter-log-events \
+  --log-group-name /emr-on-eks/bs-analytics \
+  --log-stream-name-prefix iot-streaming-bronze-silver \
+  --filter-pattern "OS info" \
+  --start-time $(($(date +%s) * 1000 - 3600000)) \
+  --region ap-south-1 \
+  --query "events[*].message" \
+  --output text | head -10
+```
 ---
 

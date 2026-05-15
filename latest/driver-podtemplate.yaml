@@ -36,11 +36,11 @@ spec:
       # Soft preference: prefer newer R-series generation (r6i / r6a) over
       # r5 / r5a when both are available at similar on-demand prices.
       # Karpenter picks cheapest by default; this just tilts toward gen-6.
-      preferredDuringSchedulingIgnoredDuringExecution:
-        - weight: 50
-          preference:
-            matchExpressions:
-              - key: karpenter.k8s.aws/instance-generation
-                operator: In
-                values:
-                  - "6"
+#      preferredDuringSchedulingIgnoredDuringExecution:
+#        - weight: 50
+#          preference:
+#            matchExpressions:
+#              - key: karpenter.k8s.aws/instance-generation
+#                operator: In
+#                values:
+#                  - "6"
