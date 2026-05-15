@@ -31,7 +31,7 @@ spec:
                 values: ["r"]
               - key: karpenter.k8s.aws/instance-cpu
                 operator: In
-                values: ["2"]
+                values: ["4"]
 
       # Soft preference: prefer newer R-series generation (r6i / r6a) over
       # r5 / r5a when both are available at similar on-demand prices.
