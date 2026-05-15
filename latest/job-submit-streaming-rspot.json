@@ -28,8 +28,8 @@
           "spark.driver.cores": "2",
           "spark.driver.maxResultSize": "1G",
 
-          "spark.kubernetes.driver.podTemplateFile": "s3://emr-migration-poc/podtemplates/driver-podtemplate-v1.yaml",
-          "spark.kubernetes.executor.podTemplateFile": "s3://emr-migration-poc/podtemplates/executor-podtemplate-spot-v1.yaml",
+          "spark.kubernetes.driver.podTemplateFile": "s3://emr-migration-poc/podtemplates/latest/driver-podtemplate.yaml",
+          "spark.kubernetes.executor.podTemplateFile": "s3://emr-migration-poc/podtemplates/latest/executor-podtemplate-spot.yaml",
 
           "spark.kubernetes.driver.serviceAccountName": "emr-sa",
           "spark.kubernetes.executor.serviceAccountName": "emr-sa",
@@ -40,7 +40,7 @@
           "spark.kubernetes.container.image.pullPolicy": "IfNotPresent",
           "spark.kubernetes.driver.label.cost-center": "emr-eks-prod",
           "spark.kubernetes.executor.label.cost-center": "emr-eks-prod",
-          "spark.kubernetes.executor.deleteOnTermination": "true",
+          "spark.kubernetes.executor.deleteOnTermination": "false",
 
           "spark.decommission.enabled": "true",
           "spark.storage.decommission.enabled": "true",

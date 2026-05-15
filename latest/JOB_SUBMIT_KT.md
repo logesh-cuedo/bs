@@ -17,7 +17,10 @@
 ## Submit a job
 
 ```
-aws emr-containers start-job-run --cli-input-json file://C:\Users\91960\Downloads\emr-eks-poc\job-submit-streaming-client-tagged-new.json --profile batterysmart --region ap-south-1
+aws emr-containers start-job-run \
+  --cli-input-json file:///Users/logeshwaran/PycharmProjects/bs/latest/job-submit-streaming-rspot.json \
+  --profile batterysmart \
+  --region ap-south-1
 ```
 
 Output gives you the `id` (e.g. `000000037glvqikoonn`). Save it — you'll use it everywhere below.
