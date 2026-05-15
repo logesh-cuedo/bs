@@ -21,15 +21,19 @@ spec:
               - key: kubernetes.io/arch
                 operator: In
                 values: ["arm64"]     # support of arm64 confirmed
+              # r-series only on Graviton — m6g/m7g .xlarge are 16 GiB total,
+              # which after EKS kubelet reservations (~2 GiB) + daemonsets
+              # (~1 GiB) leaves ~13 GiB allocatable. Our executor pod request
+              # is 13 GiB (10G heap + 3G overhead) and limit 16G, so m*.xlarge
+              # is right at the edge / over the line and Karpenter would skip
+              # it anyway. Keeping the constraint explicit so Karpenter doesn't
+              # waste scheduling iterations on m-families.
               - key: karpenter.k8s.aws/instance-category
                 operator: In
-                values: ["m", "r"]    # diversified: both m and r class
-#              - key: karpenter.k8s.aws/instance-family
-#                operator: In
-#                values: ["m6g", "m6gd", "m7g", "m7gd", "r6g", "r6gd", "r7g", "r7gd"] # Graviton families
+                values: ["r"]
               - key: karpenter.k8s.aws/instance-cpu
                 operator: In
-                values: ["4"]    # only sizes that fit your 4-core executor
+                values: ["4"]    # one executor per node, max Spot pool diversity
 
       # Soft preference: newer generations when prices are similar.
       # Karpenter still picks cheapest available Spot, this just tilts

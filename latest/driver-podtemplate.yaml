@@ -21,16 +21,21 @@ spec:
               - key: kubernetes.io/arch
                 operator: In
                 values: ["amd64"]
-              - key: karpenter.k8s.aws/instance-family
+              # r-series (8:1 mem:cpu) — at 2 vCPU = 16 GiB, fits the 10G
+              # driver pod request comfortably on .large. Switched from
+              # m-series: m-large = 8 GiB which doesn't fit a 10G request,
+              # so Karpenter would have been forced up to m-xlarge (4 vCPU)
+              # at higher cost than r-large for the same effective memory.
+              - key: karpenter.k8s.aws/instance-category
                 operator: In
-                values: ["m5", "m5a", "m6i", "m6a"]
+                values: ["r"]
               - key: karpenter.k8s.aws/instance-cpu
                 operator: In
-                values: ["2", "4"]
+                values: ["2"]
 
-      # Soft preference: prefer newer generation (m6) over older (m5) when both
-      # are available at similar Spot prices. Karpenter picks cheapest by default,
-      # this tilts toward newer instances when prices match.
+      # Soft preference: prefer newer R-series generation (r6i / r6a) over
+      # r5 / r5a when both are available at similar on-demand prices.
+      # Karpenter picks cheapest by default; this just tilts toward gen-6.
       preferredDuringSchedulingIgnoredDuringExecution:
         - weight: 50
           preference:
