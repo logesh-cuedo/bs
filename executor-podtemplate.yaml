@@ -9,6 +9,7 @@ spec:
   nodeSelector:
     upgrid.in/nodepool: emr
     karpenter.sh/capacity-type: on-demand
+#    kubernetes.io/arch: amd64
   tolerations:
     - key: upgrid.in/nodepool
       operator: Equal
