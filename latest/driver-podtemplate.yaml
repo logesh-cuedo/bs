@@ -1,0 +1,41 @@
+# driver-podtemplate.yaml
+apiVersion: v1
+kind: Pod
+spec:
+  tolerations:
+    - key: upgrid.in/nodepool
+      operator: Equal
+      value: emr
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: upgrid.in/nodepool
+                operator: In
+                values: ["emr"]
+              - key: karpenter.sh/capacity-type
+                operator: In
+                values: ["on-demand"]   # driver stays on-demand for stability
+              - key: kubernetes.io/arch
+                operator: In
+                values: ["amd64"]
+              - key: karpenter.k8s.aws/instance-family
+                operator: In
+                values: ["m5", "m5a", "m6i", "m6a"]
+              - key: karpenter.k8s.aws/instance-cpu
+                operator: In
+                values: ["2", "4"]
+
+      # Soft preference: prefer newer generation (m6) over older (m5) when both
+      # are available at similar Spot prices. Karpenter picks cheapest by default,
+      # this tilts toward newer instances when prices match.
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 50
+          preference:
+            matchExpressions:
+              - key: karpenter.k8s.aws/instance-generation
+                operator: In
+                values:
+                  - "6"
