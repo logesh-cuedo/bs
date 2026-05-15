@@ -1,0 +1,114 @@
+{
+  "name": "iot-streaming-bronze-silver",
+  "virtualClusterId": "brtw9ztup2y01wok6x8r2bsmr",
+  "executionRoleArn": "arn:aws:iam::910556394401:role/bs-analytics-emr-on-eks-irsa",
+  "releaseLabel": "emr-7.9.0-latest",
+  "tags": {
+    "Vendor": "Devotica",
+    "cost-center": "emr-eks-prod",
+    "workload": "iot-streaming-bronze-silver"
+  },
+  "jobDriver": {
+    "sparkSubmitJobDriver": {
+      "entryPoint": "s3://emr-migration-poc/scripts/streaming_v3_s3tables_eks.py",
+      "sparkSubmitParameters": "--jars s3://emr-migration-poc/jars/s3-tables-catalog-for-iceberg-runtime-0.1.8.jar --packages org.apache.spark:spark-sql-kafka-0-10_2.12:3.5.6,org.apache.spark:spark-avro_2.12:3.5.6"
+    }
+  },
+  "configurationOverrides": {
+    "applicationConfiguration": [
+      {
+        "classification": "spark-defaults",
+        "properties": {
+          "spark.executor.instances": "4",
+          "spark.executor.memory": "10G",
+          "spark.executor.memoryOverhead": "3G",
+          "spark.executor.cores": "4",
+          "spark.driver.memory": "8G",
+          "spark.driver.memoryOverhead": "2G",
+          "spark.driver.cores": "2",
+          "spark.driver.maxResultSize": "1G",
+
+          "spark.kubernetes.driver.podTemplateFile": "s3://emr-migration-poc/podtemplates/driver-podtemplate.yaml",
+          "spark.kubernetes.executor.podTemplateFile": "s3://emr-migration-poc/podtemplates/executor-podtemplate-spot.yaml",
+
+          "spark.kubernetes.driver.serviceAccountName": "emr-sa",
+          "spark.kubernetes.executor.serviceAccountName": "emr-sa",
+          "spark.kubernetes.driver.limit.cores": "2",
+          "spark.kubernetes.driver.limit.memory": "12G",
+          "spark.kubernetes.executor.limit.cores": "4",
+          "spark.kubernetes.executor.limit.memory": "15G",
+          "spark.kubernetes.container.image.pullPolicy": "IfNotPresent",
+          "spark.kubernetes.driver.label.cost-center": "emr-eks-prod",
+          "spark.kubernetes.executor.label.cost-center": "emr-eks-prod",
+          "spark.kubernetes.executor.deleteOnTermination": "false",
+
+          "spark.kubernetes.driver.node.selector.kubernetes.io/arch": "amd64",
+          "spark.kubernetes.executor.node.selector.kubernetes.io/arch": "amd64",
+          "spark.kubernetes.driver.node.selector.karpenter.k8s.aws/instance-category": "r",
+          "spark.kubernetes.executor.node.selector.karpenter.k8s.aws/instance-category": "r",
+
+          "spark.decommission.enabled": "true",
+          "spark.storage.decommission.enabled": "true",
+          "spark.storage.decommission.shuffleBlocks.enabled": "true",
+          "spark.storage.decommission.rddBlocks.enabled": "true",
+          "spark.storage.decommission.shuffleBlocks.maxThreads": "16",
+          "spark.storage.decommission.fallbackStorage.path": "s3a://emr-migration-poc/spark-fallback/",
+          "spark.storage.decommission.fallbackStorage.cleanUp": "true",
+          "spark.executor.decommission.killInterval": "90s",
+
+          "spark.network.timeout": "300s",
+          "spark.executor.heartbeatInterval": "30s",
+          "spark.task.maxFailures": "8",
+          "spark.stage.maxConsecutiveAttempts": "8",
+          "spark.scheduler.mode": "FAIR",
+
+          "spark.serializer": "org.apache.spark.serializer.KryoSerializer",
+          "spark.kryo.unsafe": "true",
+          "spark.kryoserializer.buffer.max": "256m",
+          "spark.cleaner.periodicGC.interval": "15min",
+
+          "spark.sql.streaming.stateStore.providerClass": "org.apache.spark.sql.execution.streaming.state.RocksDBStateStoreProvider",
+          "spark.sql.streaming.stateStore.rocksdb.compactOnCommit": "true",
+          "spark.sql.streaming.stateStore.rocksdb.changelogCheckpointing.enabled": "true",
+          "spark.sql.streaming.stateStore.compression.codec": "zstd",
+          "spark.sql.streaming.minBatchesToRetain": "10",
+          "spark.sql.streaming.noDataMicroBatches.enabled": "false",
+          "spark.sql.streaming.metricsEnabled": "false",
+          "spark.sql.streaming.kafka.useDeprecatedOffsetFetching": "false",
+          "spark.sql.streaming.kafka.consumer.cache.capacity": "64",
+          "spark.sql.streaming.kafka.consumer.cache.timeout": "10m",
+
+          "spark.sql.shuffle.partitions": "32",
+          "spark.sql.adaptive.enabled": "true",
+          "spark.sql.adaptive.coalescePartitions.enabled": "false",
+          "spark.sql.adaptive.skewJoin.enabled": "true",
+          "spark.sql.autoBroadcastJoinThreshold": "-1",
+
+          "spark.sql.iceberg.handle-timestamp-without-timezone": "true",
+          "spark.sql.iceberg.check-nullability": "false",
+
+          "spark.log.level": "WARN",
+
+          "spark.sql.extensions": "org.apache.iceberg.spark.extensions.IcebergSparkSessionExtensions",
+          "spark.sql.catalog.s3tablescatalog/bs-iot-tables-poc": "org.apache.iceberg.spark.SparkCatalog",
+          "spark.sql.catalog.s3tablescatalog/bs-iot-tables-poc.catalog-impl": "software.amazon.s3tables.iceberg.S3TablesCatalog",
+          "spark.sql.catalog.s3tablescatalog/bs-iot-tables-poc.warehouse": "arn:aws:s3tables:ap-south-1:910556394401:bucket/bs-iot-tables-poc",
+          "spark.sql.defaultCatalog": "s3tablescatalog/bs-iot-tables-poc",
+          "spark.hadoop.fs.s3a.aws.credentials.provider": "com.amazonaws.auth.WebIdentityTokenCredentialsProvider",
+
+          "spark.driver.extraJavaOptions": "-Dsoftware.amazon.s3tables.shaded.awssdk.http.service.impl=software.amazon.s3tables.shaded.awssdk.http.urlconnection.UrlConnectionSdkHttpService -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/tmp/heapdump.hprof",
+          "spark.executor.extraJavaOptions": "-Dsoftware.amazon.s3tables.shaded.awssdk.http.service.impl=software.amazon.s3tables.shaded.awssdk.http.urlconnection.UrlConnectionSdkHttpService"
+        }
+      }
+    ],
+    "monitoringConfiguration": {
+      "cloudWatchMonitoringConfiguration": {
+        "logGroupName": "/emr-on-eks/bs-analytics",
+        "logStreamNamePrefix": "iot-streaming-bronze-silver"
+      },
+      "s3MonitoringConfiguration": {
+        "logUri": "s3://emr-migration-poc/emr-eks-logs/"
+      }
+    }
+  }
+}

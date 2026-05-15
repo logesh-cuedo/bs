@@ -1,0 +1,29 @@
+Subject: EMR-on-EKS streaming on S3 Tables — request for expert guidance
+
+Hello AWS Support,
+
+We are migrating an IoT streaming pipeline from Databricks to EMR-on-EKS
+writing to S3 Tables (Iceberg). We have run several 24-hour stability
+attempts and every one has failed — each for a different reason. We have
+mitigated each prior cause as we found it, but a new failure mode keeps
+emerging on the next attempt. The two most recent attempts reached hours
+29 and 10 respectively before the driver pod was terminated — same
+failure signature both times, despite all earlier fixes holding. The
+10-hour run is documented in the attached PDF.
+
+At this point we believe we need an outside review from someone with
+EMR-on-EKS + Spark Structured Streaming + S3 Tables (Iceberg) expertise
+to look at whether our overall workload shape is supportable on this
+stack as we have it configured, and what the recommended pattern would
+be if not. We are open to changing architecture, retuning the write
+path, switching to EMR Serverless, or any other direction your team
+sees fit.
+
+For cost reasons we want to keep executors on Spot, ideally on Graviton
+(arm64) rather than on-demand x86. Any guidance on making that pattern
+resilient for this workload would be especially welcome.
+
+Would be great if we could get on a call and discuss this further.
+
+Thanks,
+[name]

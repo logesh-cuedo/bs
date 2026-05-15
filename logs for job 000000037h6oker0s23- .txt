@@ -1,0 +1,74 @@
+: "69 lines displayed"
+Total bytes processed: "3.84  MB"
+Common labels: {"container":"spark-kubernetes-driver","detected_level":"unknown","namespace":"emr-prod"}
+
+
+1778766931968 2026-05-14T13:55:31.968Z +++ stdbuf -o0 grep -E '(Error|Exception|Fail)'
+1778766931966 2026-05-14T13:55:31.966Z +++ stdbuf -o0 grep -E '(Error|Exception|Fail)'
+1778766931966 2026-05-14T13:55:31.966Z Error path to watch is not set
+1778766931959 2026-05-14T13:55:31.959Z + '[' -z /var/log/spark/error.log ']'
+1778766931959 2026-05-14T13:55:31.959Z + '[' -z '(Error|Exception|Fail)' ']'
+1778766851041 2026-05-14T13:54:11.041Z at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:714)
+1778766851041 2026-05-14T13:54:11.041Z : java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+1778766851041 2026-05-14T13:54:11.041Z py4j.protocol.Py4JJavaError: An error occurred while calling o241.sql.
+1778766851041 2026-05-14T13:54:11.041Z    raise Py4JJavaError(
+1778766851041 2026-05-14T13:54:11.041Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 179, in deco
+1778766851041 2026-05-14T13:54:11.041Z An exception was raised by the Python Proxy. Return Message: Traceback (most recent call last):
+1778766851041 2026-05-14T13:54:11.041Z STREAMING QUERY EXCEPTION:
+1778766851031 2026-05-14T13:54:11.031Z at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:714)
+1778766851029 2026-05-14T13:54:11.029Z : java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+1778766851029 2026-05-14T13:54:11.029Z py4j.protocol.Py4JJavaError: An error occurred while calling o241.sql.
+1778766851029 2026-05-14T13:54:11.029Z    raise Py4JJavaError(
+1778766851029 2026-05-14T13:54:11.029Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 179, in deco
+1778766851029 2026-05-14T13:54:11.029Z 2026-05-14 13:54:11,029 - ERROR - Streaming query exception: An exception was raised by the Python Proxy. Return Message: Traceback (most recent call last):
+1778766850853 2026-05-14T13:54:10.853Z at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:714)
+1778766850852 2026-05-14T13:54:10.852Z : java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+1778766850852 2026-05-14T13:54:10.852Z py4j.protocol.Py4JJavaError: An error occurred while calling o241.sql.
+1778766850852 2026-05-14T13:54:10.852Z    raise Py4JJavaError(
+1778766850852 2026-05-14T13:54:10.852Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 179, in deco
+1778766850852 2026-05-14T13:54:10.852Z 2026-05-14 13:54:10,852 - ERROR - awaitTermination raised: [STREAM_FAILED] Query [id = 181d109d-1231-4523-a54f-179b74416bd6, runId = 6c877f00-4b29-4c38-89ec-3909690dd6ac] terminated with exception: An exception was raised by the Python Proxy. Return Message: Traceback (most recent call last):
+1778766850661 2026-05-14T13:54:10.661Z at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:714)
+1778766850660 2026-05-14T13:54:10.660Z : java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+1778766850660 2026-05-14T13:54:10.660Z py4j.protocol.Py4JJavaError: An error occurred while calling o241.sql.
+1778766850660 2026-05-14T13:54:10.660Z    raise Py4JJavaError(
+1778766850660 2026-05-14T13:54:10.660Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 179, in deco
+1778766850660 2026-05-14T13:54:10.660Z py4j.Py4JException: An exception was raised by the Python Proxy. Return Message: Traceback (most recent call last):
+1778766850660 2026-05-14T13:54:10.660Z 26/05/14 13:54:10 ERROR MicroBatchExecution: Query [id = 181d109d-1231-4523-a54f-179b74416bd6, runId = 6c877f00-4b29-4c38-89ec-3909690dd6ac] terminated with error
+1778766850597 2026-05-14T13:54:10.597Z at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:714)
+1778766850596 2026-05-14T13:54:10.596Z : java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+1778766850596 2026-05-14T13:54:10.596Z py4j.protocol.Py4JJavaError: An error occurred while calling o241.sql.
+1778766850596 2026-05-14T13:54:10.596Z    raise Py4JJavaError(
+1778766850596 2026-05-14T13:54:10.596Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 179, in deco
+1778766850596 2026-05-14T13:54:10.596Z 2026-05-14 13:54:10,537 - ERROR - There was an exception while executing the Python Proxy on the Python Side.
+1778766850542 2026-05-14T13:54:10.542Z io.netty.channel.StacklessClosedChannelException: null
+1778766850542 2026-05-14T13:54:10.542Z 26/05/14 13:54:10 ERROR TransportClient: Failed to send RPC RPC 8234412404816996289 to /10.70.25.54:34038: io.netty.channel.StacklessClosedChannelException
+1778766850538 2026-05-14T13:54:10.538Z at org.apache.spark.sql.execution.QueryExecution$.withInternalError(QueryExecution.scala:714)
+1778766850536 2026-05-14T13:54:10.536Z : java.lang.IllegalStateException: Cannot call methods on a stopped SparkContext.
+1778766850536 2026-05-14T13:54:10.536Z 2026-05-14 13:54:10,536 - ERROR - [Silver] Batch 80 FAILED (bronze succeeded): An error occurred while calling o241.sql.
+1778764265947 2026-05-14T13:11:05.947Z Error path to watch is not set
+1778764265945 2026-05-14T13:11:05.945Z +++ stdbuf -o0 grep -E '(Error|Exception|Fail)'
+1778764265944 2026-05-14T13:11:05.944Z +++ stdbuf -o0 grep -E '(Error|Exception|Fail)'
+1778764265937 2026-05-14T13:11:05.937Z + '[' -z /var/log/spark/error.log ']'
+1778764265937 2026-05-14T13:11:05.937Z + '[' -z '(Error|Exception|Fail)' ']'
+1778763833960 2026-05-14T13:03:53.960Z pyspark.errors.exceptions.captured.AnalysisException:
+1778763833960 2026-05-14T13:03:53.960Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 185, in deco
+1778763833921 2026-05-14T13:03:53.921Z pyspark.errors.exceptions.captured.AnalysisException:
+1778763833921 2026-05-14T13:03:53.921Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 185, in deco
+1778763811849 2026-05-14T13:03:31.849Z Error path to watch is not set
+1778763811844 2026-05-14T13:03:31.844Z +++ stdbuf -o0 grep -E '(Error|Exception|Fail)'
+1778763811844 2026-05-14T13:03:31.844Z +++ stdbuf -o0 grep -E '(Error|Exception|Fail)'
+1778763811837 2026-05-14T13:03:31.837Z + '[' -z /var/log/spark/error.log ']'
+1778763811837 2026-05-14T13:03:31.837Z + '[' -z '(Error|Exception|Fail)' ']'
+1778763421614 2026-05-14T12:57:01.614Z To tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS.; line 1 pos 26;
+1778763421614 2026-05-14T12:57:01.614Z pyspark.errors.exceptions.captured.AnalysisException: [TABLE_OR_VIEW_NOT_FOUND] The table or view `s3tablescatalog/bs-iot-tables-poc`.`silver`.`iot_events_latest.snapshots` cannot be found. Verify the spelling and correctness of the schema and catalog.
+1778763421614 2026-05-14T12:57:01.614Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 185, in deco
+1778763421575 2026-05-14T12:57:01.575Z pyspark.errors.exceptions.captured.AnalysisException:
+1778763421575 2026-05-14T12:57:01.575Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 185, in deco
+1778763421506 2026-05-14T12:57:01.506Z To tolerate the error on drop use DROP VIEW IF EXISTS or DROP TABLE IF EXISTS.; line 1 pos 26;
+1778763421506 2026-05-14T12:57:01.506Z pyspark.errors.exceptions.captured.AnalysisException: [TABLE_OR_VIEW_NOT_FOUND] The table or view `s3tablescatalog/bs-iot-tables-poc`.`silver`.`iot_events_latest.snapshots` cannot be found. Verify the spelling and correctness of the schema and catalog.
+1778763421506 2026-05-14T12:57:01.506Z  File "/usr/lib/spark/python/lib/pyspark.zip/pyspark/errors/exceptions/captured.py", line 185, in deco
+1778763397946 2026-05-14T12:56:37.946Z Error path to watch is not set
+1778763397946 2026-05-14T12:56:37.946Z +++ stdbuf -o0 grep -E '(Error|Exception|Fail)'
+1778763397943 2026-05-14T12:56:37.943Z +++ stdbuf -o0 grep -E '(Error|Exception|Fail)'
+1778763397936 2026-05-14T12:56:37.936Z + '[' -z /var/log/spark/error.log ']'
+1778763397936 2026-05-14T12:56:37.936Z + '[' -z '(Error|Exception|Fail)' ']'

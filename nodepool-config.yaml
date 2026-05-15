@@ -1,0 +1,59 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: emr
+spec:
+  template:
+    metadata:
+      labels:
+        upgrid.in/nodepool: emr
+    spec:
+      requirements:
+        - key: kubernetes.io/arch
+          operator: In
+          values: ["arm64", "amd64"]
+        - key: kubernetes.io/os
+          operator: In
+          values: ["linux"]
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot", "on-demand"]
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["t", "m", "r"]
+        - key: karpenter.k8s.aws/instance-generation
+          operator: Gt
+          values: ["2"]
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: Gt
+          values: ["2"]
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: Lt
+          values: ["17"]
+        - key: karpenter.k8s.aws/instance-memory
+          operator: Gt
+          values: ["4000"]
+        - key: karpenter.k8s.aws/instance-memory
+          operator: Lt
+          values: ["65000"]
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["ap-south-1a"]
+      taints:
+        - key: upgrid.in/nodepool
+          value: emr
+          effect: NoSchedule
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
+      expireAfter: Never
+      terminationGracePeriod: 15m
+  limits:
+    cpu: "30"
+    memory: 150Gi
+  disruption:
+    budgets:
+    - nodes: "1"
+    consolidationPolicy: WhenEmpty
+    consolidateAfter: 1h

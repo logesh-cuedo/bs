@@ -1,0 +1,98 @@
+Context attachment — EMR-on-EKS streaming on S3 Tables
+======================================================
+Companion to the AWS Support email requesting expert guidance.
+
+
+Identifiers
+-----------
+  Account / Region:        910556394401 / ap-south-1
+  EMR release:             emr-7.9.0-latest
+  Virtual cluster:         brtw9ztup2y01wok6x8r2bsmr
+  EKS / namespace:         bs-analytics-eks-cluster / emr-prod
+  S3 Tables bucket ARN:    arn:aws:s3tables:ap-south-1:910556394401:bucket/bs-iot-tables-poc
+  Tables:                  bronze.iot (append), silver.iot_events_latest, silver.iot_events_latest_valid (MERGE-on-read)
+  S3 log root:             s3://emr-migration-poc/emr-eks-logs/brtw9ztup2y01wok6x8r2bsmr/jobs/
+
+
+Workload shape
+--------------
+  Source:    MSK Kafka, Avro, ~3,500–4,000 rec/sec steady, bursts to ~16K/sec
+  Trigger:   30 s processingTime, foreachBatch
+  Bronze:    append every batch
+  Silver:    MERGE INTO on every batch (latest-per-device upserts)
+  State:     RocksDB with changelogCheckpointing
+  Compute:   dedicated Karpenter NodePool, on-demand, m-series amd64
+
+
+Failure pattern
+---------------
+  Run               Duration   Cause we diagnosed                          Mitigated by
+  ...glvqikoonn     3 h 09 m   Driver SIGTERMed by Karpenter consolidation Dedicated NodePool + taint
+  ...gncv3v0996     4 h 33 m   Executor graceful decommission, state       spark.storage.decommission.* + s3a fallback
+                               didn't migrate in time
+  ...grqasb01cr     2 h 12 m   S3 Tables auto-maintenance vs MERGE         snapshot isolation + commit.retry.* + swallow
+                               commit (ConflictException)                  handler on silver
+  ...g74dd0ivkf     7 h 44 m   Fluentd sidecar OOMKilled (chatty driver)   spark.log.level=WARN + UI retention down
+  ...fsjcis8rer    19 h 06 m   Executor evictions + Fluentd-OOM tail       Fully on-demand, no Spot, no burstable
+  ...gscnp2qanr    29 h 00 m   See "Latest failure" below                  Next run in progress
+
+In the latest run, every prior mitigation held: zero Karpenter events,
+zero Spot reclaims, zero executor evictions, zero commit conflicts,
+driver logs KBs not MBs. Still failed at hour 29.
+
+
+Latest failure — 000000037gscnp2qanr (29 h)
+-------------------------------------------
+EMR `failureReason` was the generic "Job driver was killed evicted or
+preempted." No OOM, no GC-overhead, no app exception, no SIGKILL in any
+of our logs. Driver JVM's last activity is a shutdown hook
+(SparkShutdownHookManager.runAll) cancelling the in-flight silver MERGE.
+Shutdown hook firing = SIGTERM not SIGKILL = pod terminated externally.
+Driver JVM then sat unresponsive for 5 h 30 m before K8s force-killed
+it, despite terminationGracePeriodSeconds=600.
+
+Two degradation curves over the 29 hours, both pointing at silver MERGE:
+  - per-batch latency 30 s → 5 min (silver MERGE went from <30 s to ~4 min)
+  - "task of very large size" WARN: 1.0 MiB at hour 2.5 → 5.5 MiB at hour 29
+
+
+Our hypothesis
+--------------
+Iceberg target-table manifest metadata walked by MERGE planning is what
+is being broadcast and what is growing. Silver tables have S3 Tables
+maintenance configured as `icebergSnapshotManagement:
+maxSnapshotAgeHours=120, minSnapshotsToKeep=1`. At 30 s commit cadence
+over 29 h that is ~3,400 retained snapshots, none eligible for
+expiration. We believe metadata bloat compounded driver memory pressure
+until kubelet evicted the pod.
+
+
+Diagnostic gaps
+---------------
+  - No kubectl access (EKS endpoint is private)
+  - Operator IAM user lacks cloudwatch:GetMetricStatistics → no
+    Container Insights for pod-level RSS/CPU
+  - Spark UI has been unreachable for this virtual cluster for weeks
+    (separate AWS Support ticket open)
+
+
+Workaround we tested that didn't work
+-------------------------------------
+We tried calling `CALL system.expire_snapshots(...)` from Spark against
+one silver table to drive snapshot expiration ourselves (POC run
+000000037h6imf7gsk3). It fails at SQL parse time with "AnalysisException:
+mismatched input '(' expecting STRING" even with
+IcebergSparkSessionExtensions configured. Either the extension is not
+activated against the S3TablesCatalog or S3 Tables intentionally blocks
+system procedures.
+
+
+What we are trying tonight
+--------------------------
+New run 000000037h6j9v9ik3c, deltas from previous:
+  - Silver MERGE cadence 30 s → 5 min (every 10th bronze batch). Drops
+    silver commits from ~2,880/day to ~288/day per table.
+  - Driver: 4G heap / 6G limit → 8G / 12G; +HeapDumpOnOutOfMemoryError
+  - spark.sql.autoBroadcastJoinThreshold=-1
+  - Executors moved to r-series Spot (driver stays on-demand);
+    decommission killInterval 60 s → 90 s
