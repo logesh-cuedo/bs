@@ -5,7 +5,7 @@
   "releaseLabel": "emr-7.9.0-latest",
   "tags": {
     "Vendor": "Devotica",
-    "cost-center": "emr-eks-prod",
+    "cost-center": "emr-eks-prod-4instances",
     "workload": "iot-streaming-bronze-silver"
   },
   "jobDriver": {
