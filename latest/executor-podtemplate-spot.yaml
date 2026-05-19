@@ -6,11 +6,36 @@ metadata:
     workload: iot-streaming-bronze-silver
 spec:
   terminationGracePeriodSeconds: 300
-  nodeSelector:
-    upgrid.in/nodepool: emr
-    karpenter.sh/capacity-type: spot
   tolerations:
     - key: upgrid.in/nodepool
       operator: Equal
       value: emr
       effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      # HARD requirements: must land on the emr NodePool.
+      # Capacity type allows BOTH Spot and on-demand → enables fallback.
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: upgrid.in/nodepool
+                operator: In
+                values: ["emr"]
+              - key: karpenter.sh/capacity-type
+                operator: In
+                values: ["spot", "on-demand"]   # both allowed = fallback enabled
+
+      # SOFT preference: prefer Spot strongly (weight 100 = highest priority).
+      # Karpenter will pick Spot when available, fall back to on-demand
+      # when Spot is unavailable. Combined with the NodePool's
+      # consolidationPolicy: WhenUnderutilized (or WhenEmptyOrUnderutilized
+      # in Karpenter v1), nodes will switch back to Spot when capacity
+      # returns. This is the full "Spot first → on-demand fallback →
+      # back to Spot" pattern.
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 100
+          preference:
+            matchExpressions:
+              - key: karpenter.sh/capacity-type
+                operator: In
+                values: ["spot"]
