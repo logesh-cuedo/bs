@@ -9,7 +9,6 @@ spec:
   nodeSelector:
     upgrid.in/nodepool: emr
     karpenter.sh/capacity-type: spot
-#    kubernetes.io/arch: arm64
   tolerations:
     - key: upgrid.in/nodepool
       operator: Equal
