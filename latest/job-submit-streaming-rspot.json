@@ -44,8 +44,6 @@
 
           "spark.kubernetes.driver.node.selector.kubernetes.io/arch": "amd64",
           "spark.kubernetes.executor.node.selector.kubernetes.io/arch": "arm64",
-          "spark.kubernetes.driver.node.selector.karpenter.k8s.aws/instance-category": "r",
-          "spark.kubernetes.executor.node.selector.karpenter.k8s.aws/instance-category": "r",
 
           "spark.decommission.enabled": "true",
           "spark.storage.decommission.enabled": "true",
