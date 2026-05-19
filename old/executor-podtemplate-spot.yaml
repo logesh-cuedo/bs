@@ -1,0 +1,58 @@
+# executor-podtemplate.yaml
+apiVersion: v1
+kind: Pod
+spec:
+  tolerations:
+    - key: upgrid.in/nodepool
+      operator: Equal
+      value: emr
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: upgrid.in/nodepool
+                operator: In
+                values: ["emr"]
+              - key: karpenter.sh/capacity-type
+                operator: In
+                values: ["spot"]      # CHANGED from on-demand
+              - key: kubernetes.io/arch
+                operator: In
+                values: ["amd64"]     # support of arm64 confirmed
+              # r-series only on Graviton — m6g/m7g .xlarge are 16 GiB total,
+              # which after EKS kubelet reservations (~2 GiB) + daemonsets
+              # (~1 GiB) leaves ~13 GiB allocatable. Our executor pod request
+              # is 13 GiB (10G heap + 3G overhead) and limit 16G, so m*.xlarge
+              # is right at the edge / over the line and Karpenter would skip
+              # it anyway. Keeping the constraint explicit so Karpenter doesn't
+              # waste scheduling iterations on m-families.
+              - key: karpenter.k8s.aws/instance-category
+                operator: In
+                values: ["r"]
+              - key: karpenter.k8s.aws/instance-cpu
+                operator: In
+                values: ["4"]    # one executor per node, max Spot pool diversity
+
+      # Soft preference: newer generations when prices are similar.
+      # Karpenter still picks cheapest available Spot, this just tilts
+      # toward gen-7 Graviton (m7g, r7g) when comparable to gen-6 (m6g, r6g).
+#      preferredDuringSchedulingIgnoredDuringExecution:
+#        - weight: 30
+#          preference:
+#            matchExpressions:
+#              - key: karpenter.k8s.aws/instance-generation
+#                operator: In
+#                values:
+#                  - "7"
+
+  # SPOT RECLAIM SURVIVAL TUNING
+  # When AWS sends a 2-minute Spot interruption notice, K8s sends SIGTERM
+  # to the pod. terminationGracePeriodSeconds controls how long K8s waits
+  # before SIGKILL. Spark's decommissioning needs time to:
+  #   1. Stop accepting new tasks (~5s)
+  #   2. Finish in-flight tasks (~30s)
+  #   3. Migrate shuffle blocks to peer executors or S3 fallback (~60-90s)
+  # 120s gives comfortable margin within the 2-minute Spot warning window.
+  terminationGracePeriodSeconds: 120

@@ -104,7 +104,7 @@ SILVER_COALESCE = 1
 # commit. At 30s trigger × 24h that's ~2,880 snapshots/day per silver table —
 # which is what bloated MERGE planning in run 000000037gscnp2qanr.
 # Running silver once every 10 bronze batches = once every 5 min cuts commit
-# frequency 10×. Tradeoff: silver "latest per device" lags bronze by up to 5 min.
+# frequency 10×. Tradeoff: silver "old per device" lags bronze by up to 5 min.
 SILVER_EVERY_N_BATCHES = 10
 
 # Periodic Iceberg snapshot expiration on the silver tables. Workaround for
@@ -161,7 +161,7 @@ def get_latest_per_device(df: DataFrame, ts_col: str = "ts") -> DataFrame:
     But uses a single hash-aggregation pass (groupBy + max of struct)
     instead of a shuffle + sort + window scan. ~2-3× faster on this
     workload. Struct ordering compares field-by-field, so putting ts
-    first means the max struct is the row with the latest ts.
+    first means the max struct is the row with the old ts.
     """
     other_cols = [c for c in df.columns if c != "deviceID" and c != ts_col]
     ordered = [ts_col] + other_cols
@@ -219,7 +219,7 @@ def _run() -> None:
     kafka_params = {
         "kafka.bootstrap.servers": KAFKA_BROKERS,
         "subscribe":               KAFKA_TOPIC,
-        "startingOffsets":         "latest",
+        "startingOffsets":         "old",
         "failOnDataLoss":          "false",
         "groupIdPrefix":           CONSUMER_GROUP,
         "kafka.security.protocol": "PLAINTEXT",
@@ -317,7 +317,7 @@ def _run() -> None:
             .withColumn("consumedAt", from_utc_timestamp("consumedAt", "Asia/Kolkata"))
             .withColumn("pushedAt",   from_utc_timestamp("pushedAt",   "Asia/Kolkata")))
 
-        # FAST per-device latest — single hash aggregation, no window scan.
+        # FAST per-device old — single hash aggregation, no window scan.
         latest_rows_df = get_latest_per_device(silver_df, ts_col="ts")
 
         # Validity flags
@@ -451,7 +451,7 @@ def _run() -> None:
                 raise
 
             # Silver runs only every Nth batch. Bronze stays real-time; silver
-            # is a derived "latest per device" view that we cap at ~1 commit per
+            # is a derived "old per device" view that we cap at ~1 commit per
             # 5 min. Tradeoff: a device whose only update lands in a skipped
             # batch won't be reflected in silver until the next silver tick.
             # That's acceptable because silver is used for current-state lookups

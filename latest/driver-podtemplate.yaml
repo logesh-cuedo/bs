@@ -1,46 +1,16 @@
-# driver-podtemplate.yaml
 apiVersion: v1
 kind: Pod
+metadata:
+  labels:
+    upgrid.in/nodepool: emr
+    workload: iot-streaming-bronze-silver
 spec:
+  terminationGracePeriodSeconds: 600
+  nodeSelector:
+    upgrid.in/nodepool: emr
+    karpenter.sh/capacity-type: on-demand
   tolerations:
     - key: upgrid.in/nodepool
       operator: Equal
       value: emr
       effect: NoSchedule
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: upgrid.in/nodepool
-                operator: In
-                values: ["emr"]
-              - key: karpenter.sh/capacity-type
-                operator: In
-                values: ["on-demand"]   # driver stays on-demand for stability
-              - key: kubernetes.io/arch
-                operator: In
-                values: ["amd64"]
-              # r-series (8:1 mem:cpu) — at 2 vCPU = 16 GiB, fits the 10G
-              # driver pod request comfortably on .large. Switched from
-              # m-series: m-large = 8 GiB which doesn't fit a 10G request,
-              # so Karpenter would have been forced up to m-xlarge (4 vCPU)
-              # at higher cost than r-large for the same effective memory.
-              - key: karpenter.k8s.aws/instance-category
-                operator: In
-                values: ["r"]
-              - key: karpenter.k8s.aws/instance-cpu
-                operator: In
-                values: ["4"]
-
-      # Soft preference: prefer newer R-series generation (r6i / r6a) over
-      # r5 / r5a when both are available at similar on-demand prices.
-      # Karpenter picks cheapest by default; this just tilts toward gen-6.
-#      preferredDuringSchedulingIgnoredDuringExecution:
-#        - weight: 50
-#          preference:
-#            matchExpressions:
-#              - key: karpenter.k8s.aws/instance-generation
-#                operator: In
-#                values:
-#                  - "6"

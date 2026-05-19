@@ -28,24 +28,19 @@
           "spark.driver.cores": "2",
           "spark.driver.maxResultSize": "1G",
 
-          "spark.kubernetes.driver.podTemplateFile": "s3://emr-migration-poc/podtemplates/driver-podtemplate.yaml",
-          "spark.kubernetes.executor.podTemplateFile": "s3://emr-migration-poc/podtemplates/executor-podtemplate-spot.yaml",
+          "spark.kubernetes.driver.podTemplateFile": "s3://emr-migration-poc/podtemplates/latest/driver-podtemplate.yaml",
+          "spark.kubernetes.executor.podTemplateFile": "s3://emr-migration-poc/podtemplates/latest/executor-podtemplate-spot.yaml",
 
           "spark.kubernetes.driver.serviceAccountName": "emr-sa",
           "spark.kubernetes.executor.serviceAccountName": "emr-sa",
           "spark.kubernetes.driver.limit.cores": "2",
-          "spark.kubernetes.driver.limit.memory": "12G",
+          "spark.kubernetes.driver.limit.memory": "10G",
           "spark.kubernetes.executor.limit.cores": "4",
-          "spark.kubernetes.executor.limit.memory": "15G",
+          "spark.kubernetes.executor.limit.memory": "16G",
           "spark.kubernetes.container.image.pullPolicy": "IfNotPresent",
           "spark.kubernetes.driver.label.cost-center": "emr-eks-prod",
           "spark.kubernetes.executor.label.cost-center": "emr-eks-prod",
           "spark.kubernetes.executor.deleteOnTermination": "false",
-
-          "spark.kubernetes.driver.node.selector.kubernetes.io/arch": "amd64",
-          "spark.kubernetes.executor.node.selector.kubernetes.io/arch": "arm64",
-          "spark.kubernetes.driver.node.selector.karpenter.k8s.aws/instance-category": "r",
-          "spark.kubernetes.executor.node.selector.karpenter.k8s.aws/instance-category": "r",
 
           "spark.decommission.enabled": "true",
           "spark.storage.decommission.enabled": "true",
