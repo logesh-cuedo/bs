@@ -1,6 +1,8 @@
 apiVersion: v1
 kind: Pod
 metadata:
+  annotations:
+    karpenter.sh/do-not-disrupt: "true"
   labels:
     upgrid.in/nodepool: emr
     workload: iot-streaming-bronze-silver

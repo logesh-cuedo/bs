@@ -85,7 +85,7 @@ CONSUMER_GROUP      = "emr_eks_streaming_poc"
 BASE                = f"s3://{S3_BUCKET}"
 # Fresh checkpoint: silver cadence + topology changed; can't reuse v5 state.
 # Cost: stream replays from earliest available Kafka offsets on first start.
-CHECKPOINT_COMBINED = f"{BASE}/checkpoints/eks/combined/iot_v7"
+CHECKPOINT_COMBINED = f"{BASE}/checkpoints/eks/combined/iot_v8"
 SCHEMA_PATH         = f"{BASE}/config/schemav1.avsc"
 RENAME_MAP_PATH     = f"{BASE}/config/rename_mapv1.json"
 
