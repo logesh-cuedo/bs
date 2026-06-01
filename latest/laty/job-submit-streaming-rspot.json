@@ -32,7 +32,7 @@
           "spark.driver.maxResultSize": "1G",
 
           "spark.kubernetes.driver.podTemplateFile": "s3://emr-migration-poc/podtemplates/final/driver-podtemplate.yaml",
-          "spark.kubernetes.executor.podTemplateFile": "s3://emr-migration-poc/podtemplates/final/executor-podtemplate-spot.yaml",
+          "spark.kubernetes.executor.podTemplateFile": "s3://emr-migration-poc/podtemplates/final/executor-podtemplate.yaml",
 
           "spark.kubernetes.driver.serviceAccountName": "emr-sa",
           "spark.kubernetes.executor.serviceAccountName": "emr-sa",
