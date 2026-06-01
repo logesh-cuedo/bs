@@ -1,0 +1,46 @@
+{
+  "name": "alert-test-failjob",
+  "virtualClusterId": "brtw9ztup2y01wok6x8r2bsmr",
+  "executionRoleArn": "arn:aws:iam::910556394401:role/bs-analytics-emr-on-eks-irsa",
+  "releaseLabel": "emr-7.9.0-latest",
+  "tags": {
+    "Vendor": "Devotica",
+    "workload": "alert-test"
+  },
+  "jobDriver": {
+    "sparkSubmitJobDriver": {
+      "entryPoint": "s3://emr-migration-poc/scripts/alert-test-fail.py"
+    }
+  },
+  "retryPolicyConfiguration": {
+    "maxAttempts": 2
+  },
+  "configurationOverrides": {
+    "applicationConfiguration": [
+      {
+        "classification": "spark-defaults",
+        "properties": {
+          "spark.executor.instances": "1",
+          "spark.executor.memory": "1G",
+          "spark.executor.cores": "1",
+          "spark.driver.memory": "2G",
+          "spark.driver.cores": "1",
+          "spark.kubernetes.driver.serviceAccountName": "emr-sa",
+          "spark.kubernetes.executor.serviceAccountName": "emr-sa",
+          "spark.kubernetes.driver.node.selector.kubernetes.io/arch": "amd64",
+          "spark.kubernetes.executor.node.selector.kubernetes.io/arch": "amd64",
+          "spark.log.level": "WARN"
+        }
+      }
+    ],
+    "monitoringConfiguration": {
+      "cloudWatchMonitoringConfiguration": {
+        "logGroupName": "/emr-on-eks/bs-analytics",
+        "logStreamNamePrefix": "alert-test-failjob"
+      },
+      "s3MonitoringConfiguration": {
+        "logUri": "s3://emr-migration-poc/emr-eks-logs/"
+      }
+    }
+  }
+}

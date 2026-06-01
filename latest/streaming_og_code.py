@@ -25,10 +25,13 @@ spark.conf.set("spark.sql.streaming.kafka.useDeprecatedOffsetFetching" , "false"
 
 # NEW OPTIMIZATIONS decreased IT BY 100
 spark.conf.set("spark.sql.shuffle.partitions", "200")
+# spark.sql.shuffle.partitions	- 32 -> 200
+# spark.shuffle.service.enabled	- false - > true
 
+spark.conf.set("spark.sql.streaming.minBatchesToRetain", "2") # spark.sql.streaming.minBatchesToRetain	10
 # NEW OPTIMIZATIONS ADDED
 spark.conf.set("spark.sql.streaming.stateStore.compression.codec", "zstd")
-spark.conf.set("spark.sql.streaming.minBatchesToRetain", "2")
+spark.conf.set("spark.sql.streaming.minBatchesToRetain", "2") # spark.sql.streaming.minBatchesToRetain	10
 spark.conf.set("spark.sql.streaming.stateStore.maintenanceInterval", "2min")
 spark.conf.set("spark.sql.streaming.stateStore.timeout", "10min")
 spark.conf.set("spark.cleaner.ttl", "3600")  # Clean metadata older than 1 hour

@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    upgrid.in/nodepool: emr
+    workload: iot-streaming-final
+  annotations:
+    karpenter.sh/do-not-disrupt: "true"
+spec:
+  terminationGracePeriodSeconds: 600
+  nodeSelector:
+    upgrid.in/nodepool: emr
+    karpenter.sh/capacity-type: on-demand
+  tolerations:
+    - key: upgrid.in/nodepool
+      operator: Equal
+      value: emr
+      effect: NoSchedule
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: karpenter.k8s.aws/instance-category
+                operator: NotIn
+                values: ["t"]
