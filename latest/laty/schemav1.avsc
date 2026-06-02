@@ -1,0 +1,1227 @@
+{
+  "type": "record",
+  "name": "NormalizedIotEvent",
+  "fields": [
+    {
+      "name": "eventId",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "canId",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "soh",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "sop",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "chargeFetStatus",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "dischargeFetStatus",
+      "type": "boolean",
+      "default": false
+    },
+    {
+      "name": "deviceID",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "ts",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "originalTs",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "pushedAt",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "consumedAt",
+      "type": "long",
+      "default": 0
+    },
+    {
+      "name": "altitude",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "soc",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "lat",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "lon",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "chargeStatus",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "chargeCycle",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "dischargeCycles",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "current",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "temperature",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "heading",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "speed",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "voltage",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "alarmEncoded",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "batteryCapacity",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "ambientSensorTemp",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "mosfetTemp",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "batteryManufacturerName",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "fgPartNum",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "softwareVersion",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "hardwareVersion",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "calibrationVersion",
+      "type": "string",
+      "default": ""
+    },
+    {
+      "name": "deltaTemperature",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "deltaCurrent",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "deltaVoltage",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "maxChargingCurrent",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "maxChargingVoltage",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "chargingStatus",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "schemaVersion",
+      "type": "string",
+      "default": ""
+    },
+    { "name": "mfgDate", "type": "string", "default": "" },
+    { "name": "cumDischargeCapacity", "type": "float", "default": 0 },
+    { "name": "imeiNo", "type": "string", "default": "" },
+    { "name": "batterySrNo", "type": "string", "default": "" },
+
+    { "name": "availableCapacity", "type": "float", "default": 0 },
+    { "name": "cumChargeCapacity", "type": "float", "default": 0 },
+    { "name": "fullChargeCapacity", "type": "float", "default": 0 },
+    { "name": "maxCellTemp", "type": "int", "default": 0 },
+
+    { "name": "designCapacity", "type": "float", "default": 0 },
+    { "name": "gpsOdo", "type": "int", "default": 0 },
+    { "name": "immobCmd", "type": "int", "default": 0 },
+    { "name": "gsmLat", "type": "float", "default": 0 },
+    { "name": "gsmLon", "type": "float", "default": 0 },
+    { "name": "radius", "type": "float", "default": 0 },
+    { "name": "networkStrength", "type": "int", "default": 0 },
+    { "name": "buzzerStatus", "type": "boolean", "default": false },
+    {
+      "name": "cellTemp",
+      "type": {
+        "name": "CellTemp",
+        "type": "record",
+        "fields": [
+          {
+            "name": "t1",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t2",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t3",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t4",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t5",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t6",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t7",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t8",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t9",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t10",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t11",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t12",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t13",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t14",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t15",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t16",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t17",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "t18",
+            "type": "float",
+            "default": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "cellVolt",
+      "type": {
+        "name": "CellVoltage",
+        "type": "record",
+        "fields": [
+          {
+            "name": "v1",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v2",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v3",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v4",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v5",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v6",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v7",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v8",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v9",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v10",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v11",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v12",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v13",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v14",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v15",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v16",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v17",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "v18",
+            "type": "float",
+            "default": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "batteryInfo",
+      "type": {
+        "name": "BatteryInfo",
+        "type": "record",
+        "fields": [
+          {
+            "name": "batteryCapacity",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "batteryProtocolVersion",
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "batterySerialNo",
+            "type": "string",
+            "default": ""
+          }
+        ]
+      }
+    },
+    {
+      "name": "batteryConfig",
+      "type": {
+        "name": "BatteryConfig",
+        "type": "record",
+        "fields": [
+          {
+            "name": "bmsOverVolt",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "bmsOverCurr",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "bmsOverTemp",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "bmsUnderTemp",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "bmsDeltaTemperature",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "bmsDeltaCurrent",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "bmsDeltaVoltage",
+            "type": "float",
+            "default": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "chargerConfig",
+      "type": {
+        "name": "ChargerConfig",
+        "type": "record",
+        "fields": [
+          {
+            "name": "chargerOverVoltage",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "chargerOverCurrent",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "chargerOverTemperature",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "chargerUnderTemperature",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "chargerDeltaCurrent",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "chargerDeltaVoltage",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "chargerDeltaTemperature",
+            "type": "float",
+            "default": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "batteryLiveMessage",
+      "type": {
+        "name": "BatteryLiveMessage",
+        "type": "record",
+        "fields": [
+          {
+            "name": "bmsChargingMode",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "bmsTemperature",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "bmsSOC",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "bmsStatus",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "bmsSetChargeVoltage",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "bmsSetChargeCurrent",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "bmsMaxChargingCurrent",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "bmsMaxChargingVoltage",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "bmsActualChargingVoltage",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "bmsActualChargingCurrent",
+            "type": "float",
+            "default": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "chargerLiveMessage",
+      "type": {
+        "name": "ChargerLiveMessage",
+        "type": "record",
+        "fields": [
+          {
+            "name": "chargerChargingMode",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "chargerTemperature",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "chargerChargingStatus",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "chargerChargeVoltage",
+            "type": "float",
+            "default": 0
+          },
+          {
+            "name": "chargerChargeCurrent",
+            "type": "float",
+            "default": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "chargerAuth",
+      "type": {
+        "name": "ChargerAuthMessage",
+        "type": "record",
+        "fields": [
+          {
+            "name": "ChargerMessageFound",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "BMSResponseFound",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "BMSResponseValue",
+            "type": "int",
+            "default": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "bmsCutoffParameter",
+      "type": [
+        "null",
+        "int",
+        {
+          "type": "record",
+          "name": "BmsCutoffParameterRecord",
+          "fields": [
+            { "name": "cellOverVoltageThreshold", "type": "float", "default": 0 },
+            { "name": "cellUnderVoltageThreshold", "type": "float", "default": 0 },
+            { "name": "batteryUnderVoltageThreshold", "type": "float", "default": 0 },
+            { "name": "shortCircuitThreshold", "type": "float", "default": 0 },
+            { "name": "overCurrentDischargeThreshold", "type": "float", "default": 0 },
+            { "name": "overTemperatureThreshold", "type": "float", "default": 0 },
+            { "name": "underTemperatureThreshold", "type": "float", "default": 0 }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "batteryInformation",
+      "type": [
+        "null",
+        "int",
+        {
+          "type": "record",
+          "name": "BatteryInformationRecord",
+          "fields": [
+            { "name": "oemIdentification", "type": "string", "default": "" },
+            { "name": "batteryIdSerialNumber", "type": "string", "default": "" },
+            { "name": "fgPartSerialNumber", "type": "string", "default": "" },
+            { "name": "softwareVersion", "type": "string", "default": "" },
+            { "name": "hardwareVersion", "type": "string", "default": "" },
+            { "name": "calibrationVersion", "type": "string", "default": "" },
+            { "name": "batteryChemistry", "type": "string", "default": "" }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "chargerInformation",
+      "type": [
+        "null",
+        "int",
+        {
+          "type": "record",
+          "name": "ChargerInformationRecord",
+          "fields": [
+            { "name": "manufacturer", "type": "string", "default": "" },
+            { "name": "chgUniqueId", "type": "string", "default": "" },
+            { "name": "fgPartNumber", "type": "string", "default": "" },
+            { "name": "softVer", "type": "string", "default": "" },
+            { "name": "hwVer", "type": "string", "default": "" },
+            { "name": "calibrationVer", "type": "string", "default": "" },
+            { "name": "cellChemistry", "type": "string", "default": "" }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "gsmCellTowerInfo",
+      "type": [
+        "null",
+        "int",
+        {
+          "type": "record",
+          "name": "gsmCellTowerInfoRecord",
+          "fields": [
+            {
+              "name": "values",
+              "type": {
+                "type": "array",
+                "items": {
+                  "type": "record",
+                  "name": "CellTower",
+                  "fields": [
+                    { "name": "cid", "type": "int", "default": 0 },
+                    { "name": "mcc", "type": "int", "default": 0 },
+                    { "name": "mnc", "type": "int", "default": 0 },
+                    { "name": "rssi", "type": "int", "default": 0 },
+                    { "name": "tac", "type": "int", "default": 0 }
+                  ]
+                }
+              },
+              "default": []
+            }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "balancingStatus",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "authenticationStatus",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "bmsDiagnostic",
+      "type": [
+        "null",
+        "int",
+        {
+          "type": "record",
+          "name": "BmsDiagnosticRecord",
+          "fields": [
+            { "name": "cuvCount", "type": "int", "default": 0 },
+            { "name": "wdgCount", "type": "int", "default": 0 },
+            { "name": "ovFaultCount", "type": "int", "default": 0 },
+            { "name": "uvFaultCount", "type": "int", "default": 0 },
+            { "name": "scFaultCount", "type": "int", "default": 0 },
+            { "name": "ocdFaultCount", "type": "int", "default": 0 },
+            { "name": "occFaultCount", "type": "int", "default": 0 },
+            { "name": "lifeTimeFaultCount", "type": "int", "default": 0 }
+          ]
+        }
+      ],
+      "default": null
+    },
+    {
+      "name": "lifetimeChargeAh",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "lifetimeDischargeAh",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "trueCapacityAh",
+      "type": "float",
+      "default": 0
+    },
+    {
+      "name": "ahSpentInLastDsg",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "psmStatus",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "bmsLastPingTs",
+      "type": "int",
+      "default": 0
+    },
+    {
+      "name": "alarms",
+      "type": {
+        "name": "Alarms",
+        "type": "record",
+        "fields": [
+          {
+            "name": "Acovl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acovl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acuvl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acuvl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Atvhl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Atvhl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Atvll1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Atvll2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acthl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acthl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Actll1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Actll2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Adthl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Adthl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Adtll1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Adtll2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acocl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acocl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Adocl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Adocl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Ashl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Ashl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Asll1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Asll2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Aedpl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Aedpl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Aetdl1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Aetdl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acmot",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Admot",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fcmtds",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fdmtds",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fcma",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fdma",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fcmb",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fdmb",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Aacm",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Mcdo",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Stsf",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fes",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Rcm",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fp",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Vcm",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Icmm",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fcm",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fmpdm",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Fscp",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Lvnc",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Mgossmo",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Cmf",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Dmf",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "cellUVP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "packUVP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "powerHighTempProtection",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "packOVP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "chargeOCP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "dischargeOCP1",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "chargeOTP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "chargeUTP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "dischargeOTP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "dischargeUTP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "powerLowTempProtection",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "cellOVP",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "CFETFail",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "DFETFail",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "deepDischargeProhibitCharging",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "voltSensingWireBroken",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "SCProtection",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "envHighTemp",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "envLowTemp",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "cellUnbalance",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "dischargeOCP2",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "Admot1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Aaltal1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Aahtal1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acmot1",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Atrl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Admot2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Aahtl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Acmot2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "Altpl2",
+            "type": "boolean",
+            "default": false
+          },
+          {
+            "name": "tempSensorFault",
+            "type": "int",
+            "default": 0
+          },
+          {
+            "name": "thermalRunwayProtection",
+            "type": "int",
+            "default": 0
+          }
+        ]
+      }
+    }
+  ]
+}
