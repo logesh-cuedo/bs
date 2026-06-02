@@ -315,26 +315,26 @@ def prepare_batch(batch_df: DataFrame) -> DataFrame:
 
 # ─── One-time pre-stream compaction (final tables) ─────────────────────────
 
-def one_time_compact_silver(spark: SparkSession) -> None:
-    for short_name in ("silver.iot_events_latest_v3", "silver.iot_events_latest_valid_v3"):
-        try:
-            if not table_exists(spark, f"`{CATALOG}`.{short_name}"):
-                logger.info(f"[startup-compact] {short_name} does not exist yet — skipping.")
-                continue
-            logger.info(f"[startup-compact] Rewriting {short_name}...")
-            spark.sql(f"""
-                CALL `{CATALOG}`.system.rewrite_data_files(
-                    table => '{short_name}',
-                    strategy => 'binpack',
-                    options => map('target-file-size-bytes', '134217728', 'min-input-files', '5')
-                )
-            """)
-            logger.info(f"[startup-compact] Done: {short_name}")
-        except Exception as e:
-            logger.warning(
-                f"[startup-compact] rewrite_data_files unavailable for {short_name} "
-                f"— relying on S3 Tables auto-compaction. ({e})"
-            )
+# def one_time_compact_silver(spark: SparkSession) -> None:
+#     for short_name in ("silver.iot_events_latest_v3", "silver.iot_events_latest_valid_v3"):
+#         try:
+#             if not table_exists(spark, f"`{CATALOG}`.{short_name}"):
+#                 logger.info(f"[startup-compact] {short_name} does not exist yet — skipping.")
+#                 continue
+#             logger.info(f"[startup-compact] Rewriting {short_name}...")
+#             spark.sql(f"""
+#                 CALL `{CATALOG}`.system.rewrite_data_files(
+#                     table => '{short_name}',
+#                     strategy => 'binpack',
+#                     options => map('target-file-size-bytes', '134217728', 'min-input-files', '5')
+#                 )
+#             """)
+#             logger.info(f"[startup-compact] Done: {short_name}")
+#         except Exception as e:
+#             logger.warning(
+#                 f"[startup-compact] rewrite_data_files unavailable for {short_name} "
+#                 f"— relying on S3 Tables auto-compaction. ({e})"
+#             )
 
 
 # ─── Main ──────────────────────────────────────────────────────────────────
@@ -385,7 +385,7 @@ def _run() -> None:
     reconciler = AthenaReconciler(REGION, ATHENA_WORKGROUP, ATHENA_OUTPUT,
                                   ATHENA_CATALOG, ATHENA_DATABASE)
 
-    one_time_compact_silver(spark)
+    # one_time_compact_silver(spark)
     spark.streams.addListener(ProgressListener(CW_NAMESPACE, REGION))
 
     raw = spark.readStream.format("kafka").options(**kafka_params).load()
