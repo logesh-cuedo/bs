@@ -22,13 +22,13 @@
       {
         "classification": "spark-defaults",
         "properties": {
-          "spark.executor.instances": "8",
-          "spark.executor.memory": "5G",
+          "spark.executor.instances": "3",
+          "spark.executor.memory": "4G",
           "spark.executor.memoryOverhead": "1500m",
           "spark.executor.cores": "2",
-          "spark.driver.memory": "12G",
+          "spark.driver.memory": "10G",
           "spark.driver.memoryOverhead": "2G",
-          "spark.driver.cores": "4",
+          "spark.driver.cores": "2",
           "spark.driver.maxResultSize": "1G",
 
           "spark.kubernetes.driver.podTemplateFile": "s3://emr-migration-poc/podtemplates/final/driver-podtemplate.yaml",
@@ -36,10 +36,10 @@
 
           "spark.kubernetes.driver.serviceAccountName": "emr-sa",
           "spark.kubernetes.executor.serviceAccountName": "emr-sa",
-          "spark.kubernetes.driver.limit.cores": "6",
-          "spark.kubernetes.driver.limit.memory": "16Gi",
+          "spark.kubernetes.driver.limit.cores": "3",
+          "spark.kubernetes.driver.limit.memory": "14Gi",
           "spark.kubernetes.executor.limit.cores": "4",
-          "spark.kubernetes.executor.limit.memory": "12Gi",
+          "spark.kubernetes.executor.limit.memory": "10Gi",
           "spark.kubernetes.container.image.pullPolicy": "IfNotPresent",
           "spark.kubernetes.driver.label.cost-center": "emr-eks-8",
           "spark.kubernetes.executor.label.cost-center": "emr-eks-8",
