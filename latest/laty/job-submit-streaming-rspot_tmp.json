@@ -1,6 +1,6 @@
 {
   "name": "iot-streaming-bronze-silver-final-tmp",
-  "virtualClusterId": "qdga1q829hakjcsxrcjr22p41",
+  "virtualClusterId": "brtw9ztup2y01wok6x8r2bsmr",
   "executionRoleArn": "arn:aws:iam::910556394401:role/bs-analytics-emr-on-eks-irsa",
   "releaseLabel": "emr-7.9.0-latest",
   "tags": {

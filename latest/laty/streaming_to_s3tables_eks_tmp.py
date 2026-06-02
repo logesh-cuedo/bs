@@ -168,8 +168,8 @@ class AthenaReconciler:
             if time.time() > deadline:
                 try:
                     self.client.stop_query_execution(QueryExecutionId=qid)
-                except Exception:
-                    pass
+                except Exception as e:
+                    raise TimeoutError(f"Athena query stop_query_execution {e}")
                 raise TimeoutError(f"Athena query {qid} exceeded {self.timeout_s}s")
             time.sleep(self.poll_s)
         if state != "SUCCEEDED":
@@ -199,12 +199,12 @@ def build_latest_merge(final: str, tmp: str, cols: list[str]) -> str:
     ins_cols   = ", ".join(f'"{c}"' for c in cols)
     ins_vals   = ", ".join(f's."{c}"' for c in cols)
     return f'''
-MERGE INTO "{final}" AS t
-USING (SELECT {sel} FROM "{tmp}") AS s
-ON t."deviceID" = s."deviceID"
-WHEN MATCHED AND s."ts" > t."ts" THEN UPDATE SET {set_clause}
-WHEN NOT MATCHED THEN INSERT ({ins_cols}) VALUES ({ins_vals})
-'''
+        MERGE INTO "{final}" AS t
+        USING (SELECT {sel} FROM "{tmp}") AS s
+        ON t."deviceID" = s."deviceID"
+        WHEN MATCHED AND s."ts" > t."ts" THEN UPDATE SET {set_clause}
+        WHEN NOT MATCHED THEN INSERT ({ins_cols}) VALUES ({ins_vals})
+        '''
 
 
 def build_valid_merge(final: str, tmp: str) -> str:
@@ -230,13 +230,13 @@ def build_valid_merge(final: str, tmp: str) -> str:
     ins_vals = ", ".join(f's."{c}"' for c in all_cols)
     sel      = ", ".join(f'"{c}"' for c in all_cols)
     return f'''
-MERGE INTO "{final}" AS t
-USING (SELECT {sel} FROM "{tmp}") AS s
-ON t."deviceID" = s."deviceID"
-WHEN MATCHED THEN UPDATE SET
-    {set_clause}
-WHEN NOT MATCHED THEN INSERT ({ins_cols}) VALUES ({ins_vals})
-'''
+        MERGE INTO "{final}" AS t
+        USING (SELECT {sel} FROM "{tmp}") AS s
+        ON t."deviceID" = s."deviceID"
+        WHEN MATCHED THEN UPDATE SET
+            {set_clause}
+        WHEN NOT MATCHED THEN INSERT ({ins_cols}) VALUES ({ins_vals})
+        '''
 
 
 # ─── CloudWatch progress listener ──────────────────────────────────────────
