@@ -75,21 +75,21 @@ SCHEMA_PATH         = f"{BASE}/config/schemav1.avsc"
 RENAME_MAP_PATH     = f"{BASE}/config/rename_mapv1.json"
 
 CATALOG             = "s3tablescatalog/bs-iot-tables-poc"
-BRONZE_TABLE        = f"`{CATALOG}`.bronze.iot_v2"
+BRONZE_TABLE        = f"`{CATALOG}`.bronze.iot_v3"
 
 # Final silver tables (written ONLY by the inline Athena MERGE).
-SILVER_LATEST_TABLE = f"`{CATALOG}`.silver.iot_events_latest_v2"
-SILVER_VALID_TABLE  = f"`{CATALOG}`.silver.iot_events_latest_valid_v2"
+SILVER_LATEST_TABLE = f"`{CATALOG}`.silver.iot_events_latest_v3"
+SILVER_VALID_TABLE  = f"`{CATALOG}`.silver.iot_events_latest_valid_v3"
 
 # Intermediate staging tables (dropped + recreated every batch).
-SILVER_LATEST_TMP_TABLE = f"`{CATALOG}`.silver.iot_events_latest_v2_tmp"
-SILVER_VALID_TMP_TABLE  = f"`{CATALOG}`.silver.iot_events_latest_valid_v2_tmp"
+SILVER_LATEST_TMP_TABLE = f"`{CATALOG}`.silver.iot_events_latest_v3_tmp"
+SILVER_VALID_TMP_TABLE  = f"`{CATALOG}`.silver.iot_events_latest_valid_v3_tmp"
 
 # Short (unqualified) names used inside Athena SQL.
-LATEST_FINAL_SHORT = "iot_events_latest_v2"
-VALID_FINAL_SHORT  = "iot_events_latest_valid_v2"
-LATEST_TMP_SHORT   = "iot_events_latest_v2_tmp"
-VALID_TMP_SHORT    = "iot_events_latest_valid_v2_tmp"
+LATEST_FINAL_SHORT = "iot_events_latest_v3"
+VALID_FINAL_SHORT  = "iot_events_latest_valid_v3"
+LATEST_TMP_SHORT   = "iot_events_latest_v3_tmp"
+VALID_TMP_SHORT    = "iot_events_latest_valid_v3_tmp"
 
 REGION              = "ap-south-1"
 CW_NAMESPACE        = "BatterySmart/IoTStreaming/V2"
@@ -316,7 +316,7 @@ def prepare_batch(batch_df: DataFrame) -> DataFrame:
 # ─── One-time pre-stream compaction (final tables) ─────────────────────────
 
 def one_time_compact_silver(spark: SparkSession) -> None:
-    for short_name in ("silver.iot_events_latest_v2", "silver.iot_events_latest_valid_v2"):
+    for short_name in ("silver.iot_events_latest_v3", "silver.iot_events_latest_valid_v3"):
         try:
             if not table_exists(spark, f"`{CATALOG}`.{short_name}"):
                 logger.info(f"[startup-compact] {short_name} does not exist yet — skipping.")
