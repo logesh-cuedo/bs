@@ -70,7 +70,7 @@ KAFKA_TOPIC         = "normalized-iot-events"
 CONSUMER_GROUP      = "emr_eks_streaming_v2"
 
 BASE                = f"s3://{S3_BUCKET}"
-CHECKPOINT_COMBINED = f"{BASE}/checkpoints/eks/combined/iot_streaming_final"
+CHECKPOINT_COMBINED = f"{BASE}/checkpoints/eks/combined/iot_streaming_final_v3"
 SCHEMA_PATH         = f"{BASE}/config/schemav1.avsc"
 RENAME_MAP_PATH     = f"{BASE}/config/rename_mapv1.json"
 
