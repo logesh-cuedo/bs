@@ -1,12 +1,12 @@
 {
-  "name": "iot-streaming-bronze-silver-final",
-  "virtualClusterId": "brtw9ztup2y01wok6x8r2bsmr",
+  "name": "iot-streaming-bronze-silver-final-tmp",
+  "virtualClusterId": "qdga1q829hakjcsxrcjr22p41",
   "executionRoleArn": "arn:aws:iam::910556394401:role/bs-analytics-emr-on-eks-irsa",
   "releaseLabel": "emr-7.9.0-latest",
   "tags": {
     "Vendor": "Devotica",
-    "cost-center": "emr-eks-final",
-    "Name": "iot-streaming-bronze-silver-final"
+    "cost-center": "emr-eks-final-tmp",
+    "Name": "iot-streaming-bronze-silver-final-tmp"
   },
   "jobDriver": {
     "sparkSubmitJobDriver": {
@@ -53,7 +53,7 @@
           "spark.storage.decommission.shuffleBlocks.enabled": "true",
           "spark.storage.decommission.rddBlocks.enabled": "true",
           "spark.storage.decommission.shuffleBlocks.maxThreads": "16",
-          "spark.storage.decommission.fallbackStorage.path": "s3a://emr-migration-poc/spark-fallback-final/",
+          "spark.storage.decommission.fallbackStorage.path": "s3a://emr-migration-poc/spark-fallback-final-tmp/",
           "spark.storage.decommission.fallbackStorage.cleanUp": "true",
           "spark.executor.decommission.killInterval": "90s",
 
@@ -106,7 +106,7 @@
     "monitoringConfiguration": {
       "cloudWatchMonitoringConfiguration": {
         "logGroupName": "/emr-on-eks/bs-analytics",
-        "logStreamNamePrefix": "iot-streaming-bronze-silver-final"
+        "logStreamNamePrefix": "iot-streaming-bronze-silver-final-tmp"
       },
       "s3MonitoringConfiguration": {
         "logUri": "s3://emr-migration-poc/emr-eks-logs/"
