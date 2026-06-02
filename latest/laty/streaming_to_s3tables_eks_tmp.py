@@ -432,15 +432,16 @@ def _run() -> None:
 
     # ─── Silver: drop+recreate _tmp, load, then inline Athena MERGE ────────
     def recreate_and_load_tmp(stage_df: DataFrame, tmp_table: str) -> None:
-        """DROP the _tmp table (discards prior batch + its snapshots), then
-        recreate it loaded with this batch's rows."""
-        spark.sql(f"DROP TABLE IF EXISTS {tmp_table}")
-        _table_exists_cache.pop(tmp_table, None)
-        try:
-            apply_table_props(stage_df.writeTo(tmp_table)).create()
-        except Exception:
-            # Fallback if the drop hasn't fully propagated in the catalog.
-            stage_df.writeTo(tmp_table).createOrReplace()
+        """Replace the _tmp table's contents with this batch's rows, atomically.
+
+        S3 Tables rejects Spark's DROP TABLE (Spark issues purge=false, which is
+        unsupported, and DROP TABLE PURGE is unreliable across Spark versions).
+        CREATE OR REPLACE TABLE AS SELECT does the same job in one atomic commit:
+        the table keeps its identity (Lake Formation grants survive) and each
+        batch fully replaces the prior batch's data. Unreferenced data files /
+        old snapshots are reclaimed by S3 Tables snapshot-expiration maintenance.
+        """
+        apply_table_props(stage_df.writeTo(tmp_table)).createOrReplace()
 
     def write_silver(prepared_df: DataFrame, batch_id: int) -> None:
         all_cols = [c for c in prepared_df.columns if c not in ("deviceID", "ts")]
