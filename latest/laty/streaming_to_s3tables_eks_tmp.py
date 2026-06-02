@@ -29,9 +29,9 @@ SILVER APPROACH (this variant):
     Formation / S3 Tables permissions to MERGE/SELECT/DELETE on the silver
     tables and read the _tmp tables.
 
-Original V2 notes (unchanged): repartition(SILVER_BUCKETS,"deviceID"),
-maxOffsetsPerTrigger 150_000, MEMORY_AND_DISK persist, Iceberg auto-compaction
-table props, best-effort startup rewrite_data_files.
+Original V2 notes: repartition(SILVER_BUCKETS,"deviceID"),
+maxOffsetsPerTrigger 150_000, Iceberg auto-compaction table props. The batch
+DataFrame is persisted MEMORY_AND_DISK; the small per-device agg is MEMORY_ONLY.
 """
 
 from __future__ import annotations
@@ -313,30 +313,6 @@ def prepare_batch(batch_df: DataFrame) -> DataFrame:
         .withColumn("pushedAt",   from_utc_timestamp((col("pushedAt")   / 1000).cast("timestamp"), "Asia/Kolkata")))
 
 
-# ─── One-time pre-stream compaction (final tables) ─────────────────────────
-
-# def one_time_compact_silver(spark: SparkSession) -> None:
-#     for short_name in ("silver.iot_events_latest_v3", "silver.iot_events_latest_valid_v3"):
-#         try:
-#             if not table_exists(spark, f"`{CATALOG}`.{short_name}"):
-#                 logger.info(f"[startup-compact] {short_name} does not exist yet — skipping.")
-#                 continue
-#             logger.info(f"[startup-compact] Rewriting {short_name}...")
-#             spark.sql(f"""
-#                 CALL `{CATALOG}`.system.rewrite_data_files(
-#                     table => '{short_name}',
-#                     strategy => 'binpack',
-#                     options => map('target-file-size-bytes', '134217728', 'min-input-files', '5')
-#                 )
-#             """)
-#             logger.info(f"[startup-compact] Done: {short_name}")
-#         except Exception as e:
-#             logger.warning(
-#                 f"[startup-compact] rewrite_data_files unavailable for {short_name} "
-#                 f"— relying on S3 Tables auto-compaction. ({e})"
-#             )
-
-
 # ─── Main ──────────────────────────────────────────────────────────────────
 
 def main() -> None:
@@ -385,7 +361,6 @@ def _run() -> None:
     reconciler = AthenaReconciler(REGION, ATHENA_WORKGROUP, ATHENA_OUTPUT,
                                   ATHENA_CATALOG, ATHENA_DATABASE)
 
-    # one_time_compact_silver(spark)
     spark.streams.addListener(ProgressListener(CW_NAMESPACE, REGION))
 
     raw = spark.readStream.format("kafka").options(**kafka_params).load()
@@ -487,7 +462,7 @@ def _run() -> None:
                              struct(col("ts"), *[col(c) for c in bms_cols]))).alias("_bms"),
                 F_max(F.when(col("isIoTValid") == 1,
                              struct(col("ts"), *[col(c) for c in iot_cols]))).alias("_iot"),
-            )).persist(StorageLevel.MEMORY_AND_DISK)
+            )).persist(StorageLevel.MEMORY_ONLY)
 
         try:
             latest_rows_df = agg.select("deviceID", "_latest.*")
