@@ -1,9 +1,16 @@
 #!/usr/bin/env python3
 """
-IoT Streaming Pipeline — V2 variant — EMR on EKS (Bronze + Silver)
-Writes to *_v2 tables in bs-iot-tables-poc S3 Tables bucket.
+IoT Streaming Pipeline — COW variant — EMR on EKS (Bronze + Silver)
+Writes to *_cow tables in bs-iot-tables-poc S3 Tables bucket.
 
-Changes vs streaming_v3_s3tables_eks-6exec.py (v2 optimizations):
+Changes vs streaming_v3_s3tables_eks-6exec.py (COW optimizations):
+  - Silver tables now use COPY-ON-WRITE for merge/update/delete.
+    Eliminates positional delete files, which were the root cause of S3 Tables
+    auto-compaction conflicts (per AWS Support 2026-05-30). Each MERGE rewrites
+    only the data files containing affected rows; old files are dereferenced.
+    Reads from Athena/Spark become faster (no delete file merging at read time).
+  - Bronze remains append-only, so the merge.mode property is irrelevant for
+    bronze but kept for consistency.
   - Silver source uses repartition(SILVER_BUCKETS, "deviceID") instead of coalesce(1)
     so silver writes parallelise across the 8 bucket partitions.
   - maxOffsetsPerTrigger lowered 500_000 -> 150_000 to match ~4.2K rec/s input
@@ -11,14 +18,16 @@ Changes vs streaming_v3_s3tables_eks-6exec.py (v2 optimizations):
   - persist() uses MEMORY_AND_DISK (PySpark's MEMORY_AND_DISK is already in
     serialized form under the hood — the Scala MEMORY_AND_DISK_SER constant
     does not exist as a PySpark class attribute).
-  - Iceberg auto-compaction table properties added to common_table_props
-    (manifest-merge + manifest target-size + write target-file-size + metadata
-    cleanup). This is the closest Iceberg layer equivalent to Delta autoCompact;
-    bulk data-file rewrite still handled by S3 Tables auto-compaction.
-  - Best-effort one-time Iceberg rewrite_data_files at startup. Compacts any
-    accumulated small files before the stream starts. Wrapped in try/except —
-    S3 Tables may parse-block the CALL (as it does for expire_snapshots);
-    if so we log and rely on S3 Tables auto-compaction.
+  - Iceberg auto-compaction table properties retained: manifest-merge + manifest
+    target-size + write target-file-size + metadata cleanup. With COW, there are
+    no positional delete files, so compaction primarily merges manifests and
+    coalesces small data files.
+  - Best-effort one-time Iceberg rewrite_data_files at startup. Wrapped in
+    try/except — S3 Tables may parse-block the CALL (as it does for
+    expire_snapshots); if so we log and rely on S3 Tables auto-compaction.
+  - Commit retry slightly relaxed vs the merge-on-read version (15s -> 60s
+    total) as a safety margin during initial COW rollout; with COW, actual
+    conflict rate should drop sharply so this rarely fires.
   - No Spark config changes vs the existing job — all tuning is at the
     application or Iceberg-table-property level.
 """
@@ -54,20 +63,20 @@ KAFKA_BROKERS       = ("b-1.mskinternalprodcluste.3mco1i.c4.kafka.ap-south-1.ama
                       "b-2.mskinternalprodcluste.3mco1i.c4.kafka.ap-south-1.amazonaws.com:9092,"
                       "b-3.mskinternalprodcluste.3mco1i.c4.kafka.ap-south-1.amazonaws.com:9092")
 KAFKA_TOPIC         = "normalized-iot-events"
-CONSUMER_GROUP      = "emr_eks_streaming_v2"
+CONSUMER_GROUP      = "emr_eks_streaming_cow"
 
 BASE                = f"s3://{S3_BUCKET}"
-CHECKPOINT_COMBINED = f"{BASE}/checkpoints/eks/combined/iot_streaming_final"
+CHECKPOINT_COMBINED = f"{BASE}/checkpoints/eks/combined/iot_streaming_final_cow"
 SCHEMA_PATH         = f"{BASE}/config/schemav1.avsc"
 RENAME_MAP_PATH     = f"{BASE}/config/rename_mapv1.json"
 
 CATALOG             = "s3tablescatalog/bs-iot-tables-poc"
-BRONZE_TABLE        = f"`{CATALOG}`.bronze.iot_v2"
-SILVER_LATEST_TABLE = f"`{CATALOG}`.silver.iot_events_latest_v2"
-SILVER_VALID_TABLE  = f"`{CATALOG}`.silver.iot_events_latest_valid_v2"
+BRONZE_TABLE        = f"`{CATALOG}`.bronze.iot_cow"
+SILVER_LATEST_TABLE = f"`{CATALOG}`.silver.iot_events_latest_cow"
+SILVER_VALID_TABLE  = f"`{CATALOG}`.silver.iot_events_latest_valid_cow"
 
 REGION              = "ap-south-1"
-CW_NAMESPACE        = "BatterySmart/IoTStreaming/V2"
+CW_NAMESPACE        = "BatterySmart/IoTStreaming/COW"
 
 BRONZE_COALESCE = 4
 SILVER_BUCKETS  = 8
@@ -184,7 +193,7 @@ def one_time_compact_silver(spark: SparkSession) -> None:
     S3 Tables blocks some Iceberg CALL procedures at parse time (notably
     system.expire_snapshots); if rewrite_data_files is similarly blocked,
     log and continue — S3 Tables auto-compaction will pick up the slack."""
-    for short_name in ("silver.iot_events_latest_v2", "silver.iot_events_latest_valid_v2"):
+    for short_name in ("silver.iot_events_latest_cow", "silver.iot_events_latest_valid_cow"):
         try:
             if not table_exists(spark, f"`{CATALOG}`.{short_name}"):
                 logger.info(f"[startup-compact] {short_name} does not exist yet — skipping.")
@@ -219,7 +228,7 @@ def main() -> None:
 
 def _run() -> None:
     spark = (SparkSession.builder
-        .appName("iot-streaming-v2")
+        .appName("iot-streaming-cow")
         .config("spark.sql.streaming.streamingProgressMaxRetained", "10")
         .config("spark.ui.retainedJobs", "50")
         .config("spark.ui.retainedStages", "50")
@@ -247,7 +256,7 @@ def _run() -> None:
     logger.info(f"Connecting to Kafka topic: {KAFKA_TOPIC}")
     logger.info(f"Checkpoint location: {CHECKPOINT_COMBINED}")
     logger.info(f"maxOffsetsPerTrigger: {kafka_params['maxOffsetsPerTrigger']}")
-    logger.info(f"Target tables (V2): {BRONZE_TABLE}, {SILVER_LATEST_TABLE}, {SILVER_VALID_TABLE}")
+    logger.info(f"Target tables (COW): {BRONZE_TABLE}, {SILVER_LATEST_TABLE}, {SILVER_VALID_TABLE}")
 
     # Best-effort one-shot compaction before the stream starts.
     one_time_compact_silver(spark)
@@ -261,25 +270,33 @@ def _run() -> None:
     ).select("data.*")
 
     # Iceberg table properties used on first-time create.
-    # The lower block ("Auto-compaction equivalents") gives us the per-commit
-    # autoCompact-like behaviour we can express at the Iceberg layer:
+    #
+    # COPY-ON-WRITE for merge/update/delete:
+    #   - Eliminates positional delete files, which were AWS-confirmed root
+    #     cause of S3 Tables auto-compaction conflicts on our silver tables.
+    #   - Each MERGE rewrites only the data files containing affected rows;
+    #     old files are dereferenced and cleaned up via snapshot expiration.
+    #   - Athena/Spark reads get faster (no delete-file application at read).
+    #   - Bronze is append-only so merge.mode is irrelevant for bronze, but
+    #     kept for property consistency across all tables.
+    #
+    # Auto-compaction equivalents (table-level, applied on every commit):
     #   - delete-after-commit + previous-versions-max bound metadata file growth
     #   - manifest-merge + manifest target-size-bytes auto-merge small manifests
-    #     on each commit (this is the inline equivalent of Delta autoCompact for
-    #     the manifest layer)
+    #     on each commit
     #   - target-file-size-bytes nudges data files toward 128MB on write
     # Bulk data-file rewrite is still handled by S3 Tables auto-compaction
     # (see put-table-maintenance-configuration, set in Layer 1).
     common_table_props = {
         "format-version":                          "2",
-        "write.merge.mode":                        "merge-on-read",
-        "write.update.mode":                       "merge-on-read",
-        "write.delete.mode":                       "merge-on-read",
+        "write.merge.mode":                        "copy-on-write",
+        "write.update.mode":                       "copy-on-write",
+        "write.delete.mode":                       "copy-on-write",
         "write.merge.isolation-level":             "snapshot",
         "commit.retry.num-retries":                "5",
         "commit.retry.min-wait-ms":                "500",
-        "commit.retry.max-wait-ms":                "5000",
-        "commit.retry.total-timeout-ms":           "15000",
+        "commit.retry.max-wait-ms":                "10000",
+        "commit.retry.total-timeout-ms":           "60000",
         # Auto-compaction equivalents (table-level, applied on every commit)
         "write.metadata.delete-after-commit.enabled": "true",
         "write.metadata.previous-versions-max":       "100",
@@ -383,17 +400,17 @@ def _run() -> None:
 
             spark.sql(f"CREATE NAMESPACE IF NOT EXISTS `{CATALOG}`.silver")
 
-            # ── silver.iot_events_latest_valid_v2 ────────────────────────
+            # ── silver.iot_events_latest_valid_cow ───────────────────────
             if not table_exists(spark, SILVER_VALID_TABLE):
                 apply_table_props(
                     combined.writeTo(SILVER_VALID_TABLE)
                             .partitionedBy(bucket(SILVER_BUCKETS, col("deviceID")))
                 ).create()
             else:
-                combined.createOrReplaceGlobalTempView("combined_valid_src_v2")
+                combined.createOrReplaceGlobalTempView("combined_valid_src_cow")
                 spark.sql(f"""
                     MERGE INTO {SILVER_VALID_TABLE} AS target
-                    USING global_temp.combined_valid_src_v2 AS source
+                    USING global_temp.combined_valid_src_cow AS source
                     ON target.deviceID = source.deviceID
                     WHEN MATCHED THEN UPDATE SET
                         ts          = CASE WHEN target.ts IS NULL OR source.ts > target.ts THEN source.ts ELSE target.ts END,
@@ -413,17 +430,17 @@ def _run() -> None:
                     WHEN NOT MATCHED THEN INSERT *
                 """)
 
-            # ── silver.iot_events_latest_v2 ──────────────────────────────
+            # ── silver.iot_events_latest_cow ─────────────────────────────
             if not table_exists(spark, SILVER_LATEST_TABLE):
                 apply_table_props(
                     latest_rows_df.writeTo(SILVER_LATEST_TABLE)
                                   .partitionedBy(bucket(SILVER_BUCKETS, col("deviceID")))
                 ).create()
             else:
-                latest_rows_df.createOrReplaceGlobalTempView("latest_src_v2")
+                latest_rows_df.createOrReplaceGlobalTempView("latest_src_cow")
                 spark.sql(f"""
                     MERGE INTO {SILVER_LATEST_TABLE} AS target
-                    USING global_temp.latest_src_v2 AS source
+                    USING global_temp.latest_src_cow AS source
                     ON target.deviceID = source.deviceID
                     WHEN MATCHED AND source.ts > target.ts THEN UPDATE SET *
                     WHEN NOT MATCHED THEN INSERT *
@@ -474,7 +491,7 @@ def _run() -> None:
             prepared.unpersist()
 
     # ─── Start the stream ──────────────────────────────────────────────────
-    logger.info("Starting combined Bronze+Silver V2 stream...")
+    logger.info("Starting combined Bronze+Silver COW stream...")
     query = (decoded.writeStream
         .foreachBatch(process_combined)
         .outputMode("update")
