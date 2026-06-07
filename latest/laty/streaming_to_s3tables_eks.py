@@ -27,12 +27,15 @@ from __future__ import annotations
 
 import json
 import logging
+import random
 import sys
+import time
 import traceback
 from typing import Set
 
 import boto3
 from botocore.exceptions import BotoCoreError, ClientError
+from py4j.protocol import Py4JJavaError
 from pyspark import StorageLevel
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql.avro.functions import from_avro
@@ -74,6 +77,15 @@ SILVER_BUCKETS  = 8
 
 SILVER_MAX_CONSECUTIVE_FAILURES = 5
 
+# Per-MERGE retry settings for ValidationException (data conflicts).
+# Iceberg's built-in commit.retry.* handles catalog commit conflicts
+# (CommitFailedException) automatically. ValidationException — which
+# fires when concurrent writers touch overlapping data — cannot be
+# auto-retried by Iceberg because it might cause data inconsistency.
+# We retry it at the application layer with exponential backoff + jitter.
+# Pattern per AWS blog "Manage concurrent write conflicts in Apache Iceberg".
+MERGE_MAX_RETRIES = 5
+
 # ─── Helpers ───────────────────────────────────────────────────────────────
 
 def load_s3_text(path: str) -> str:
@@ -86,6 +98,76 @@ def load_s3_text(path: str) -> str:
 def avsc_field_names(avsc_text: str) -> list[str]:
     schema = json.loads(avsc_text)
     return [f["name"] for f in schema.get("fields", [])]
+
+
+def backoff(attempt: int) -> float:
+    """Exponential backoff with jitter for ValidationException retries.
+
+    attempt=1 -> ~2s,   attempt=2 -> ~4s,   attempt=3 -> ~8s,
+    attempt=4 -> ~16s,  attempt=5 -> ~32s,  capped at 60s.
+    Adds 0-25% random jitter so concurrent retries don't all fire at once.
+    """
+    exp = min(2 ** attempt, 60)
+    jitter = random.uniform(0, 0.25 * exp)
+    return exp + jitter
+
+
+def is_validation_exception(java_exception) -> bool:
+    """Walk the Java exception chain looking for Iceberg's ValidationException.
+
+    This is the exception thrown when Iceberg's data-conflict check fails
+    (Step 4 in the Iceberg write flow): a concurrent transaction modified
+    files the current MERGE depends on. Unlike CommitFailedException,
+    Iceberg's library cannot auto-retry this because retrying could cause
+    data inconsistency — so we retry at the application layer.
+    """
+    cause = java_exception
+    while cause is not None:
+        try:
+            if "org.apache.iceberg.exceptions.ValidationException" \
+               in str(cause.getClass().getName()):
+                return True
+            cause = cause.getCause()
+        except Exception:
+            # Defensive: if exception chain traversal itself fails,
+            # treat it as non-ValidationException.
+            return False
+    return False
+
+
+def merge_with_retry(spark: SparkSession, sql: str, label: str) -> None:
+    """Execute a MERGE INTO with retry on Iceberg ValidationException.
+
+    Catalog-commit conflicts (CommitFailedException) are handled inside
+    Iceberg via commit.retry.* table properties. This wrapper only kicks
+    in for ValidationException — data conflicts that need application-side
+    retries. After MERGE_MAX_RETRIES, the exception propagates up so the
+    outer silver_failure_state counter can decide whether to abort the job.
+    """
+    attempt = 0
+    while True:
+        try:
+            spark.sql(sql)
+            return
+        except Py4JJavaError as e:
+            if not is_validation_exception(e.java_exception):
+                # Not a ValidationException — let outer handler deal with it
+                # (commit conflicts, etc., have their own table-property retries
+                # already; if those exhausted, surfacing here is correct).
+                raise
+            attempt += 1
+            if attempt >= MERGE_MAX_RETRIES:
+                logger.error(
+                    f"[{label}] ValidationException persisted after "
+                    f"{MERGE_MAX_RETRIES} retries — propagating."
+                )
+                raise
+            delay = backoff(attempt)
+            logger.warning(
+                f"[{label}] ValidationException on attempt {attempt}/{MERGE_MAX_RETRIES} "
+                f"— retrying in {delay:.1f}s."
+            )
+            time.sleep(delay)
 
 
 _table_exists_cache: dict[str, bool] = {}
@@ -278,10 +360,11 @@ def _run() -> None:
         "write.merge.isolation-level":             "snapshot",
         "commit.retry.num-retries":                "5",
         "commit.retry.min-wait-ms":                "500",
-        "commit.retry.max-wait-ms":                "5000",
-        "commit.retry.total-timeout-ms":           "15000",
+        "commit.retry.max-wait-ms":                "10000",
+        "commit.retry.total-timeout-ms":           "60000",
         # Auto-compaction equivalents (table-level, applied on every commit)
         "write.metadata.delete-after-commit.enabled": "true",
+        "write.delete.target-file-size-bytes":        "67108864",
         "write.metadata.previous-versions-max":       "100",
         "commit.manifest.target-size-bytes":          "8388608",
         "commit.manifest-merge.enabled":              "true",
@@ -391,7 +474,7 @@ def _run() -> None:
                 ).create()
             else:
                 combined.createOrReplaceGlobalTempView("combined_valid_src_v2")
-                spark.sql(f"""
+                merge_with_retry(spark, f"""
                     MERGE INTO {SILVER_VALID_TABLE} AS target
                     USING global_temp.combined_valid_src_v2 AS source
                     ON target.deviceID = source.deviceID
@@ -411,7 +494,7 @@ def _run() -> None:
                         lat         = CASE WHEN target.iotLastTs IS NULL OR source.iotLastTs > target.iotLastTs THEN source.lat ELSE target.lat END,
                         lon         = CASE WHEN target.iotLastTs IS NULL OR source.iotLastTs > target.iotLastTs THEN source.lon ELSE target.lon END
                     WHEN NOT MATCHED THEN INSERT *
-                """)
+                """, label=f"Silver-valid B{batch_id}")
 
             # ── silver.iot_events_latest_v2 ──────────────────────────────
             if not table_exists(spark, SILVER_LATEST_TABLE):
@@ -421,13 +504,13 @@ def _run() -> None:
                 ).create()
             else:
                 latest_rows_df.createOrReplaceGlobalTempView("latest_src_v2")
-                spark.sql(f"""
+                merge_with_retry(spark, f"""
                     MERGE INTO {SILVER_LATEST_TABLE} AS target
                     USING global_temp.latest_src_v2 AS source
                     ON target.deviceID = source.deviceID
                     WHEN MATCHED AND source.ts > target.ts THEN UPDATE SET *
                     WHEN NOT MATCHED THEN INSERT *
-                """)
+                """, label=f"Silver-latest B{batch_id}")
 
             logger.info(f"[Silver] Batch {batch_id}: upserted")
         finally:
